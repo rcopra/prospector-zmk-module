@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Scale LVGL's bundled Unscii 8 font to crisp 40 px cells, without new dependencies.
+"""Scale LVGL's bundled Unscii 8 font to crisp pixel cells, without dependencies.
 
-Usage: python3 scripts/vaporwave_font.py /path/to/lvgl/src/font/lv_font_unscii_8.c
+Usage: python3 scripts/vaporwave_font.py /path/to/lvgl/src/font/lv_font_unscii_8.c [--status]
 """
 import re
 import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
+status = "--status" in sys.argv[2:]
+scale_x, scale_y = (1, 2) if status else (5, 5)
+font_name = "vaporwave_status_16" if status else "vaporwave_pixel_40"
 bitmap_source = source.split("glyph_bitmap[] = {", 1)[1].split("};", 1)[0]
 bitmap_source = re.sub(r"/\*.*?\*/", "", bitmap_source, flags=re.S)
 bitmap = bytes(int(x, 16) for x in re.findall(r"0x([0-9a-f]+)", bitmap_source))
@@ -23,13 +26,13 @@ for index, advance, width, height, x, y in map(lambda row: map(int, row), descri
         scaled = []
         for col in range(width):
             bit = row * width + col
-            scaled.extend([(bitmap[index + bit // 8] >> (7 - bit % 8)) & 1] * 5)
-        bits.extend(scaled * 5)
+            scaled.extend([(bitmap[index + bit // 8] >> (7 - bit % 8)) & 1] * scale_x)
+        bits.extend(scaled * scale_y)
     offset = len(data)
     bits.extend([0] * (-len(bits) % 8))
     for i in range(0, len(bits), 8):
         data.append(sum(bit << (7 - j) for j, bit in enumerate(bits[i:i + 8])))
-    glyphs.append(f"    {{{offset}, {advance * 5}, {width * 5}, {height * 5}, {x * 5}, {y * 5}}},")
+    glyphs.append(f"    {{{offset}, {advance * scale_x}, {width * scale_x}, {height * scale_y}, {x * scale_x}, {y * scale_y}}},")
 
 lines = ["    " + ", ".join(f"0x{x:02x}" for x in data[i:i + 16]) + ","
          for i in range(0, len(data), 16)]
@@ -55,5 +58,8 @@ const lv_font_t vaporwave_pixel_40 = {
     .line_height = 45, .base_line = 0, .dsc = &dsc,
 };
 '''
-target = Path(__file__).resolve().parents[1] / "boards/shields/prospector_adapter/src/layouts/vaporwave/pixel_font.c"
+output = output.replace("vaporwave_pixel_40", font_name).replace(
+    ".line_height = 45", f".line_height = {9 * scale_y}")
+filename = "status_font.c" if status else "pixel_font.c"
+target = Path(__file__).resolve().parents[1] / "boards/shields/prospector_adapter/src/layouts/vaporwave" / filename
 target.write_text(output)

@@ -10,6 +10,8 @@
 #include "layouts/operator/status_screen.c"
 #elif defined(CONFIG_PROSPECTOR_STATUS_SCREEN_VAPORWAVE)
 #include "layouts/vaporwave/status_screen.c"
+#elif defined(CONFIG_PROSPECTOR_STATUS_SCREEN_CATPPUCCIN)
+#include "layouts/catppuccin/status_screen.c"
 #else
 #error "No status screen layout selected"
 #endif

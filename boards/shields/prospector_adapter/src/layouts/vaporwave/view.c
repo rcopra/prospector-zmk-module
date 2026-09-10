@@ -3,6 +3,7 @@
 #include <string.h>
 
 LV_FONT_DECLARE(vaporwave_pixel_40);
+LV_FONT_DECLARE(vaporwave_status_16);
 
 #define BG 0x180420
 #define GRID 0x582C80
@@ -42,7 +43,7 @@ static void line(lv_layer_t *layer, int x1, int y1, int x2, int y2, uint32_t col
 
 static void draw_background(lv_event_t *event) {
     lv_layer_t *layer = lv_event_get_layer(event);
-    rect(layer, 0, 27, 280, 1, GRID);
+    rect(layer, 0, 32, 280, 1, GRID);
 
     /* Striped sunset and perspective grid use draw commands, not a framebuffer. */
     static const struct { uint8_t x, y, w, h; uint32_t color; } stripes[] = {
@@ -81,19 +82,19 @@ static void draw_background(lv_event_t *event) {
              145, size, 8, i == displayed.layer_index ? PINK : DIM);
     }
 
-    rect(layer, 0, 203, 280, 1, PINK);
+    rect(layer, 0, 195, 280, 1, PINK);
     for (int i = 0; i < 2; i++) {
         const struct vaporwave_battery *battery = &displayed.batteries[i];
         uint32_t color = !battery->connected ? DIM :
             battery->known && battery->level < 20 ? AMBER : PINK;
-        int x = 10 + i * 142;
-        rect(layer, x, 214, 29, 15, color);
-        rect(layer, x + 2, 216, 25, 11, BG);
-        rect(layer, x + 29, 219, 3, 5, color);
+        int x = 24 + i * 144;
+        rect(layer, x, 203, 29, 15, color);
+        rect(layer, x + 2, 205, 25, 11, BG);
+        rect(layer, x + 29, 208, 3, 5, color);
         if (battery->connected && battery->known) {
             for (int segment = 0; segment < 4; segment++) {
                 if (battery->level > segment * 25) {
-                    rect(layer, x + 4 + segment * 6, 218, 4, 7, color);
+                    rect(layer, x + 4 + segment * 6, 207, 4, 7, color);
                 }
             }
         }
@@ -119,10 +120,12 @@ lv_obj_t *vaporwave_create(void) {
     lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(screen, draw_background, LV_EVENT_DRAW_MAIN, NULL);
 
-    output_label = label(screen, "USB", 12, 7, PINK);
-    wpm_label = label(screen, "0 WPM", 180, 7, DIM);
-    lv_obj_set_width(wpm_label, 88);
+    /* Keep status content clear of the rounded panel and case window. */
+    output_label = label(screen, "USB", 24, 12, PINK);
+    wpm_label = label(screen, "0", 192, 12, DIM);
+    lv_obj_set_width(wpm_label, 64);
     lv_obj_set_style_text_align(wpm_label, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_label_set_long_mode(wpm_label, LV_LABEL_LONG_CLIP);
 
     layer_label = label(screen, "BASE", 10, 84, WHITE);
     lv_obj_set_style_text_font(layer_label, &vaporwave_pixel_40, 0);
@@ -134,16 +137,19 @@ lv_obj_t *vaporwave_create(void) {
     for (int i = 0; i < 4; i++) {
         mod_boxes[i] = lv_obj_create(screen);
         lv_obj_remove_style_all(mod_boxes[i]);
-        lv_obj_set_pos(mod_boxes[i], 10 + i * 67, 167);
+        lv_obj_set_pos(mod_boxes[i], 10 + i * 67, 161);
         lv_obj_set_size(mod_boxes[i], 59, 27);
         lv_obj_set_style_bg_color(mod_boxes[i], lv_color_hex(BG), 0);
         lv_obj_set_style_bg_opa(mod_boxes[i], LV_OPA_COVER, 0);
         lv_obj_set_style_border_width(mod_boxes[i], 1, 0);
         mod_labels[i] = label(mod_boxes[i], names[i], 0, 0, DIM);
+        lv_obj_set_style_text_font(mod_labels[i], &vaporwave_status_16, 0);
         lv_obj_center(mod_labels[i]);
     }
-    battery_labels[0] = label(screen, "L OFF", 49, 213, DIM);
-    battery_labels[1] = label(screen, "R OFF", 191, 213, DIM);
+    for (int i = 0; i < 2; i++) {
+        battery_labels[i] = label(screen, i ? "R OFF" : "L OFF", 64 + i * 144, 202, DIM);
+        lv_obj_set_style_text_font(battery_labels[i], &vaporwave_status_16, 0);
+    }
     return screen;
 }
 
@@ -168,7 +174,7 @@ void vaporwave_update(const struct vaporwave_state *state) {
     }
     lv_obj_set_style_text_color(output_label,
         lv_color_hex(state->output_connected ? PINK : DIM), 0);
-    lv_label_set_text_fmt(wpm_label, "%d WPM", state->wpm);
+    lv_label_set_text_fmt(wpm_label, "%d", state->wpm);
     lv_obj_set_style_text_color(wpm_label, lv_color_hex(CYAN), 0);
 
     for (int i = 0; i < 4; i++) {

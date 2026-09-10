@@ -1,0 +1,7 @@
+Use case: ui-mockup
+Asset type: visual concept for a tiny 280 x 240 landscape keyboard status display.
+Primary request: Catppuccin Mocha terminal theme with a charming miniature Catppuccin cat / bongo cat mashup homage typing on a tiny mechanical keyboard.
+Style: crisp restrained pixel art, monospaced bitmap typography, flat solid colors, terminal aesthetic, no gradients, no glow.
+Palette: base #1e1e2e, mantle #181825, text #cdd6f4, subtext #a6adc8, mauve #cba6f7, green #a6e3a1, peach #fab387, blue #89b4fa.
+Composition: a single straight-on screen graphic enlarged with sharp pixels, 7:6 aspect ratio. Header at the top with small terminal window dots and "USB" on left, "042" on right. Thin divider below. A small prompt "user@prospector:~" then a prominent green "> BASE_" command near the upper middle. Below it, a centered simple cute lavender and cream cat with triangular ears, two dot eyes, pink cheeks and two paws on a miniature keyboard, roughly 90 x 55 logical pixels. Give the cat the simple silhouette and playful expression of Bongo Cat, using the pastel Catppuccin cat aesthetic. Below cat a row "CMD  OPT  CTRL  SHIFT", one active key highlighted mauve. Footer "L 100%" on left and "R 100%" on right with small battery meters. Keep all essential content inset 24 logical pixels on horizontal edges and 12 at top, 20 at bottom.
+Constraints: exactly one screen, graphic only, no device housing, no external annotations, no photographed setup, no extra text, no watermark. Legibility and comfortable negative space matter.

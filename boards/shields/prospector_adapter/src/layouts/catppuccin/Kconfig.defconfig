@@ -1,0 +1,16 @@
+if PROSPECTOR_STATUS_SCREEN_CATPPUCCIN
+
+config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+    select LV_USE_LABEL
+    select LV_FONT_UNSCII_16
+
+config ZMK_WPM
+    default y
+
+config LV_Z_VDB_SIZE
+    default 25
+
+config LV_Z_MEM_POOL_SIZE
+    default 24000
+
+endif
