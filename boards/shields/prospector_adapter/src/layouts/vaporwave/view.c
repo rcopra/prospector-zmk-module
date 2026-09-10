@@ -4,12 +4,12 @@
 
 LV_FONT_DECLARE(vaporwave_pixel_40);
 
-#define BG 0x0C041B
-#define GRID 0x34104F
-#define CYAN 0x14EAF0
-#define PINK 0xFF29AC
-#define DIM 0x76509E
-#define WHITE 0xF5ECFF
+#define BG 0x1B0620
+#define GRID 0x57124E
+#define PINK 0xFF2D9E
+#define CAPS 0xFF8AD8
+#define DIM 0x8A3A78
+#define WHITE 0xFFE9F7
 #define PEACH 0xFF927E
 
 static lv_obj_t *screen;
@@ -45,10 +45,10 @@ static void draw_background(lv_event_t *event) {
 
     /* Striped sunset and perspective grid use draw commands, not a framebuffer. */
     static const struct { uint8_t x, y, w, h; uint32_t color; } stripes[] = {
-        {130, 39, 20, 3, 0xFF20B3}, {116, 42, 48, 6, 0xFF24AD},
-        {109, 50, 62, 6, 0xFF2BA6}, {104, 59, 72, 6, 0xFF389F},
-        {102, 68, 76, 6, 0xFF5796}, {101, 78, 78, 5, 0xFF7489},
-        {103, 88, 74, 4, PEACH}, {106, 97, 68, 3, 0xF573A9},
+        {130, 38, 20, 4, 0xFF1E8E}, {116, 42, 48, 6, 0xFF249B},
+        {109, 50, 62, 6, 0xFF2BA8}, {104, 59, 72, 6, 0xFF33B4},
+        {102, 68, 76, 6, 0xFF3FBF}, {101, 78, 78, 5, 0xFF54C9},
+        {103, 88, 74, 4, 0xFF7ED6}, {106, 97, 68, 3, 0xFFAEDF},
     };
     for (unsigned i = 0; i < sizeof(stripes) / sizeof(stripes[0]); i++) {
         rect(layer, stripes[i].x, stripes[i].y, stripes[i].w, stripes[i].h,
@@ -67,14 +67,14 @@ static void draw_background(lv_event_t *event) {
     int size = LV_MIN(8, step - 2);
     for (int i = 0; i < count; i++) {
         rect(layer, (280 - count * step + step - size) / 2 + i * step,
-             145, size, 8, i == displayed.layer_index ? CYAN : DIM);
+             145, size, 8, i == displayed.layer_index ? PINK : DIM);
     }
 
     rect(layer, 0, 203, 280, 1, PINK);
     for (int i = 0; i < 2; i++) {
         const struct vaporwave_battery *battery = &displayed.batteries[i];
         uint32_t color = !battery->connected ? DIM :
-            battery->known && battery->level < 20 ? PEACH : CYAN;
+            battery->known && battery->level < 20 ? PEACH : PINK;
         int x = 10 + i * 142;
         rect(layer, x, 214, 29, 15, color);
         rect(layer, x + 2, 216, 25, 11, BG);
@@ -108,7 +108,7 @@ lv_obj_t *vaporwave_create(void) {
     lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(screen, draw_background, LV_EVENT_DRAW_MAIN, NULL);
 
-    output_label = label(screen, "USB", 12, 7, CYAN);
+    output_label = label(screen, "USB", 12, 7, PINK);
     wpm_label = label(screen, "0 WPM", 180, 7, DIM);
     lv_obj_set_width(wpm_label, 88);
     lv_obj_set_style_text_align(wpm_label, LV_TEXT_ALIGN_RIGHT, 0);
@@ -156,17 +156,17 @@ void vaporwave_update(const struct vaporwave_state *state) {
                               state->output_connected ? "" : " --");
     }
     lv_obj_set_style_text_color(output_label,
-        lv_color_hex(state->output_connected ? CYAN : DIM), 0);
+        lv_color_hex(state->output_connected ? PINK : DIM), 0);
     lv_label_set_text_fmt(wpm_label, "%d WPM", state->wpm);
-    lv_obj_set_style_text_color(wpm_label, lv_color_hex(0xBC95E9), 0);
+    lv_obj_set_style_text_color(wpm_label, lv_color_hex(0xFF9AD5), 0);
 
     for (int i = 0; i < 4; i++) {
         bool active = (state->mods & (1 << i)) || (i == 3 && state->caps_word);
-        uint32_t color = active ? (i == 3 ? PINK : CYAN) : DIM;
+        uint32_t color = active ? (i == 3 ? CAPS : PINK) : DIM;
         lv_obj_set_style_border_color(mod_boxes[i], lv_color_hex(color), 0);
         lv_obj_set_style_text_color(mod_labels[i], lv_color_hex(color), 0);
         lv_obj_set_style_bg_color(mod_boxes[i],
-            lv_color_hex(active ? (i == 3 ? 0x300823 : 0x04262E) : BG), 0);
+            lv_color_hex(active ? (i == 3 ? 0x4C0C36 : 0x3A0A2C) : BG), 0);
     }
     lv_label_set_text(mod_labels[3], state->caps_word ? "CAPS" : "SHIFT");
     lv_obj_center(mod_labels[3]);
@@ -178,10 +178,10 @@ void vaporwave_update(const struct vaporwave_state *state) {
             lv_label_set_text_fmt(battery_labels[i], "%c OFF", side);
         } else if (!battery->known) {
             lv_label_set_text_fmt(battery_labels[i], "%c --", side);
-            color = CYAN;
+            color = PINK;
         } else {
             lv_label_set_text_fmt(battery_labels[i], "%c %u%%", side, battery->level);
-            color = battery->level < 20 ? PEACH : CYAN;
+            color = battery->level < 20 ? PEACH : PINK;
         }
         lv_obj_set_style_text_color(battery_labels[i], lv_color_hex(color), 0);
     }
