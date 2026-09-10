@@ -4,13 +4,14 @@
 
 LV_FONT_DECLARE(vaporwave_pixel_40);
 
-#define BG 0x1B0620
-#define GRID 0x57124E
-#define PINK 0xFF2D9E
-#define CAPS 0xFF8AD8
-#define DIM 0x8A3A78
-#define WHITE 0xFFE9F7
-#define PEACH 0xFF927E
+#define BG 0x180420
+#define GRID 0x582C80
+#define PINK 0xFF2C9C
+#define CYAN 0x00FFE8
+#define CAPS 0xFF8CE0
+#define DIM 0xA85498
+#define WHITE 0xFFE8F8
+#define AMBER 0xFFB040
 
 static lv_obj_t *screen;
 static lv_obj_t *layer_label;
@@ -45,10 +46,11 @@ static void draw_background(lv_event_t *event) {
 
     /* Striped sunset and perspective grid use draw commands, not a framebuffer. */
     static const struct { uint8_t x, y, w, h; uint32_t color; } stripes[] = {
-        {130, 38, 20, 4, 0xFF1E8E}, {116, 42, 48, 6, 0xFF249B},
-        {109, 50, 62, 6, 0xFF2BA8}, {104, 59, 72, 6, 0xFF33B4},
-        {102, 68, 76, 6, 0xFF3FBF}, {101, 78, 78, 5, 0xFF54C9},
-        {103, 88, 74, 4, 0xFF7ED6}, {106, 97, 68, 3, 0xFFAEDF},
+        /* Dark violet at top, magenta glow at the horizon. */
+        {130, 38, 20, 4, 0x2C1050}, {116, 42, 48, 6, 0x482470},
+        {109, 50, 62, 6, 0x7024A8}, {104, 59, 72, 6, 0xA01CC0},
+        {102, 68, 76, 6, 0xE824C8}, {101, 78, 78, 5, 0xFF2C9C},
+        {103, 88, 74, 4, 0xFF5CB8}, {106, 97, 68, 3, 0xFF8CE0},
     };
     for (unsigned i = 0; i < sizeof(stripes) / sizeof(stripes[0]); i++) {
         rect(layer, stripes[i].x, stripes[i].y, stripes[i].w, stripes[i].h,
@@ -62,6 +64,15 @@ static void draw_background(lv_event_t *event) {
         line(layer, 0, rows[i], 279, rows[i], GRID);
     }
 
+    /* Dark plate behind the layer label: the sunset stripes are too bright
+       for text without it. */
+    lv_draw_rect_dsc_t plate;
+    lv_draw_rect_dsc_init(&plate);
+    plate.bg_color = lv_color_hex(BG);
+    plate.bg_opa = LV_OPA_90;
+    lv_area_t plate_area = {8, 80, 271, 127};
+    lv_draw_rect(layer, &plate, &plate_area);
+
     int count = displayed.layer_count;
     int step = count ? LV_MIN(18, 252 / count) : 18;
     int size = LV_MIN(8, step - 2);
@@ -74,7 +85,7 @@ static void draw_background(lv_event_t *event) {
     for (int i = 0; i < 2; i++) {
         const struct vaporwave_battery *battery = &displayed.batteries[i];
         uint32_t color = !battery->connected ? DIM :
-            battery->known && battery->level < 20 ? PEACH : PINK;
+            battery->known && battery->level < 20 ? AMBER : PINK;
         int x = 10 + i * 142;
         rect(layer, x, 214, 29, 15, color);
         rect(layer, x + 2, 216, 25, 11, BG);
@@ -158,7 +169,7 @@ void vaporwave_update(const struct vaporwave_state *state) {
     lv_obj_set_style_text_color(output_label,
         lv_color_hex(state->output_connected ? PINK : DIM), 0);
     lv_label_set_text_fmt(wpm_label, "%d WPM", state->wpm);
-    lv_obj_set_style_text_color(wpm_label, lv_color_hex(0xFF9AD5), 0);
+    lv_obj_set_style_text_color(wpm_label, lv_color_hex(CYAN), 0);
 
     for (int i = 0; i < 4; i++) {
         bool active = (state->mods & (1 << i)) || (i == 3 && state->caps_word);
@@ -181,7 +192,7 @@ void vaporwave_update(const struct vaporwave_state *state) {
             color = PINK;
         } else {
             lv_label_set_text_fmt(battery_labels[i], "%c %u%%", side, battery->level);
-            color = battery->level < 20 ? PEACH : PINK;
+            color = battery->level < 20 ? AMBER : PINK;
         }
         lv_obj_set_style_text_color(battery_labels[i], lv_color_hex(color), 0);
     }
